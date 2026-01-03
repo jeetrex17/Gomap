@@ -30,8 +30,15 @@ func Workers(Host string, ports chan int, results chan int) {
 
 func main() {
 	HostPtr := flag.String("Host", "scanme.nmap.org", "Website to Scan ")
+	Startptr := flag.Int("Start", 1, "the starting Port from where you wanna scan")
+	Stopptr := flag.Int("Stop", 65536, "the last Port to Scan")
 
 	flag.Parse()
+
+	if *Stopptr <= *Startptr {
+		fmt.Print("Please give proper start and end ports\n")
+		return
+	}
 
 	portch := make(chan int, 100)
 	resultch := make(chan int)
@@ -43,13 +50,14 @@ func main() {
 	}
 
 	go func() {
-		for i := 1; i <= 1024; i++ {
+		for i := *Startptr; i <= *Stopptr; i++ {
 			portch <- i
 		}
 		close(portch)
 	}()
 
-	for i := 0; i < 1024; i++ {
+	nuloop := *Stopptr - *Startptr + 1
+	for i := 0; i < nuloop; i++ {
 		p := <-resultch
 
 		if p != 0 {
